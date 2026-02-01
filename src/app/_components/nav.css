@@ -1,0 +1,19 @@
+nav ul a {
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  padding: 5px 20px;
+  transition: 0.2s ease-in-out;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+nav ul a:hover {
+  transform: scale(1.1);
+  background-color: var(--color-slate-100);
+  color: black;
+}
+
+@media (max-width: 768px) {
+  nav ul a {
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
+}
