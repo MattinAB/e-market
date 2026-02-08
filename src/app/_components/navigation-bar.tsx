@@ -17,7 +17,7 @@ export default async function NavigationBar() {
       data-site-nav
       className="sticky top-0 w-full bg-neutral-100/80 shadow-[2px_2px_10px_rgba(0,0,0,0.3)] z-50"
     >
-      <div className="sm:p-2 px-2.5  ">
+      <div className="sm:px-4 px-2.5 ">
         <Link href="/">E-Market Logo</Link>
       </div>
       <div className="flex flex-wrap lg:flex-nowrap w-full  sm:py-4  p-4 lg:justify-start lg:gap-8 lg:px-6 justify-between items-center">
