@@ -1,76 +1,104 @@
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import SignoutButton from "./signout-button";
 import { CiShoppingCart } from "react-icons/ci";
-import "./nav.css";
-import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import NavHeightSync from "./nav-height-sync";
+import { SearchBar } from "./search-bar";
+import { LayoutDashboard, User } from "lucide-react";
+import { getUserWithRole } from "@/lib/get-user-with-role";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { getLocale } from "@/lib/locale-server";
+import { translations } from "@/lib/i18n";
 
 export default async function NavigationBar() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const [user, locale] = await Promise.all([getUserWithRole(), getLocale()]);
+  const session = !!user;
+  const isAdmin = user?.role === "admin";
+  const t = translations[locale].nav;
 
   return (
-    <div
+    <header
       data-site-nav
-      className="sticky top-0 w-full bg-neutral-100/80 shadow-[2px_2px_10px_rgba(0,0,0,0.3)] z-50"
+      className="sticky top-0 z-50 w-full glass border-b shadow-sm"
     >
-      <div className="sm:px-4 px-2.5 ">
-        <Link href="/">E-Market Logo</Link>
-      </div>
-      <div className="flex flex-wrap lg:flex-nowrap w-full  sm:py-4  p-4 lg:justify-start lg:gap-8 lg:px-6 justify-between items-center">
-        <nav className="lg:order-1">
-          <ul className="flex space-x-0.5 sm:space-x-5">
-            <li>
-              <Button asChild>
-                <Link href="/Dashboard/mens">Mens</Link>
-              </Button>
-            </li>
-            <li>
-              <Button asChild>
-                <Link href="/Dashboard/womans">Womans</Link>
-              </Button>
-            </li>
-            <li>
-              <Button asChild>
-                <Link href="/Dashboard/kids">Kids</Link>
-              </Button>
-            </li>
-          </ul>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 font-semibold text-foreground transition-opacity hover:opacity-90"
+        >
+          <span className="text-xl tracking-tight">E‑Market</span>
+        </Link>
+
+        {/* Nav links */}
+        <nav className="flex items-center gap-1 sm:gap-2">
+          <Button asChild variant="ghost" size="sm" className="font-medium">
+            <Link href="/Dashboard/mens">{t.men}</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="font-medium">
+            <Link href="/Dashboard/womans">{t.women}</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="font-medium">
+            <Link href="/Dashboard/kids">{t.kids}</Link>
+          </Button>
         </nav>
-        <div className="flex order-3 lg:order-2 lg:flex-1 lg:justify-center mt-1.5 mx-auto  box-border gap-2 justify-center items-center rounded-xl shadow-[2px_2px_10px_rgba(0,0,0,0.3)]">
-          <Field orientation="horizontal">
-            <Input type="search" placeholder="Search..." />
-            <Button>Search</Button>
-          </Field>
+
+        {/* Search */}
+        <div className="hidden flex-1 max-w-md lg:flex lg:max-w-sm lg:justify-center">
+          <Suspense fallback={<div className="h-9 w-full rounded-md border bg-muted/50" />}>
+            <SearchBar placeholder={t.search} />
+          </Suspense>
         </div>
-        <div className="flex lg:order-3 gap-1 sm:p-2 p-0 rounded-md shadow-[2px_2px_10px_rgba(0,0,0,0.3)]">
-          <Button asChild>
-            <Link
-              className="hover:bg-slate-100 hover:text-black hover:scale-[1.1] transition-all duration-300 ease-in-out"
-              href="/"
-            >
-              <CiShoppingCart size={24} />
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeSwitcher />
+          <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/cart" title="View cart">
+              <CiShoppingCart className="size-5" />
             </Link>
           </Button>
 
           {!session ? (
             <Button asChild>
               <Link
-                className="hover:bg-slate-100 hover:text-black hover:scale-[1.1] transition-all duration-300 ease-in-out"
                 href="/auth"
+                className="inline-flex items-center gap-2"
               >
-                SignIn
+                <User className="size-4" />
+                {t.signIn}
               </Link>
             </Button>
           ) : (
-            <SignoutButton />
+            <div className="flex items-center gap-1">
+              {isAdmin && (
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="size-4" />
+                    {t.admin}
+                  </Link>
+                </Button>
+              )}
+              <SignoutButton label={t.signOut} />
+            </div>
           )}
         </div>
       </div>
+
+      {/* Mobile search */}
+      <div className="border-t px-4 py-2 lg:hidden">
+        <Suspense fallback={<div className="h-9 w-full rounded-md border bg-muted/50" />}>
+          <SearchBar placeholder={t.search} />
+        </Suspense>
+      </div>
+
       <NavHeightSync />
-    </div>
+    </header>
   );
 }

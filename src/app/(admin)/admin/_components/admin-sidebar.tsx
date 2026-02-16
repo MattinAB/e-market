@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -16,46 +15,48 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Shirt, ShoppingBag } from "lucide-react";
+import { Package, CreditCard, ArrowLeft } from "lucide-react";
 
-type AppSidebarProps = {
+type AdminSidebarProps = {
   children: React.ReactNode;
 };
 
-export function AppSidebar({ children }: AppSidebarProps) {
-  const pathname = usePathname();
-
-  const links = [
-    { href: "/Dashboard/mens", label: "Men", icon: Shirt },
-    { href: "/Dashboard/womans", label: "Women", icon: Shirt },
-    { href: "/Dashboard/kids", label: "Kids", icon: ShoppingBag },
-  ];
-
+export function AdminSidebar({ children }: AdminSidebarProps) {
   return (
     <SidebarProvider>
       <Sidebar className="border-r border-border/50 bg-sidebar/80 backdrop-blur-sm">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel className="text-base font-semibold text-sidebar-foreground">
-              Shop
+              Admin
             </SidebarGroupLabel>
             <SidebarSeparator className="bg-border/50" />
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
-                {links.map(({ href, label, icon: Icon }) => (
-                  <SidebarMenuItem key={href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === href}
-                      className="gap-2"
-                    >
-                      <Link href={href}>
-                        <Icon className="size-4" />
-                        {label}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="gap-2">
+                    <Link href="/admin/orders">
+                      <Package className="size-4" />
+                      Orders
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="gap-2">
+                    <Link href="/admin/payments">
+                      <CreditCard className="size-4" />
+                      Payments
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="gap-2">
+                    <Link href="/">
+                      <ArrowLeft className="size-4" />
+                      Back to shop
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -66,7 +67,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/50 bg-background/80 px-4 py-3 backdrop-blur-sm">
           <SidebarTrigger className="-ml-1" />
           <span className="text-sm font-medium text-muted-foreground">
-            E‑Market
+            E‑Market Admin
           </span>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>

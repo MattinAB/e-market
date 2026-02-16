@@ -12,26 +12,34 @@ model User {
   id            String    @id @default(cuid())
   email         String    @unique
   name          String?
+  role          String    @default("user")
   emailVerified Boolean   @default(false)
   image         String?
+  banned        Boolean   @default(false)
+  bannedAt      DateTime?
+  bannedReason  String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
 
+  banReason  String?
+  banExpires DateTime?
+
   @@map("user")
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@index([userId])
@@ -68,4 +76,32 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Order {
+  id        String    @id @default(cuid())
+  userId    String
+  status    String    @default("pending")
+  total     Decimal   @db.Decimal(10, 2)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payments  Payment[]
+
+  @@index([userId])
+  @@map("order")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount        Decimal  @db.Decimal(10, 2)
+  method        String
+  status        String   @default("pending")
+  transactionId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("payment")
 }

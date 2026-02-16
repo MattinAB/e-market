@@ -1,18 +1,20 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
-import { PiSignOut } from "react-icons/pi";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
-export default function SignoutButton() {
-  const isMobile = useIsMobile();
+type SignoutButtonProps = {
+  label?: string;
+};
+
+export default function SignoutButton({ label = "Sign out" }: SignoutButtonProps) {
   const router = useRouter();
 
   async function logout() {
     const { data } = await authClient.signOut();
     if (data?.success) {
-      // navigate to auth page and refresh server components so session updates
       router.push("/auth");
       router.refresh();
     }
@@ -20,11 +22,13 @@ export default function SignoutButton() {
 
   return (
     <Button
-      className="items-center hover:bg-slate-100 hover:text-black hover:scale-[1.1] transition-all duration-300 ease-in-out"
+      variant="outline"
+      size="sm"
       onClick={logout}
+      className="gap-2"
     >
-      SignOut
-      <PiSignOut size={isMobile ? 18 : 26} />
+      <LogOut className="size-4" />
+      {label}
     </Button>
   );
 }

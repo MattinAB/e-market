@@ -5,10 +5,5 @@ export default function UserLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="relative flex min-h-screen items-start">
-      <AppSidebar />
-      {children}
-    </div>
-  );
+  return <AppSidebar>{children}</AppSidebar>;
 }
