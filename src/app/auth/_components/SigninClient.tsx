@@ -68,7 +68,11 @@ export default function SigninClient() {
       }
     }
   };
-
+  function handleFACEbookLogin() {
+    authClient.signIn.social({
+      provider: "facebook",
+    });
+  }
   return (
     <div className="flex justify-center items-center min-h-screen font-sans">
       <div className=" bg-gray-50 p-8 rounded-xl shadow-md w-full max-w-100">
@@ -122,13 +126,14 @@ export default function SigninClient() {
         {/* Secondary Methods: GitHub & Google */}
         <div className="flex flex-col gap-3">
           <button
+            onClick={handleFACEbookLogin}
             type="button"
             className="flex items-center justify-center gap-3 p-3 rounded-md border border-gray-300 bg-white cursor-pointer font-medium text-gray-800 text-[0.95rem] hover:bg-gray-50 transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+              <path d="M23.9981 11.9991C23.9981 5.37216 18.626 0 11.9991 0C5.37216 0 0 5.37216 0 11.9991C0 17.9882 4.38789 22.9522 10.1242 23.8524V15.4676H7.07758V11.9991H10.1242V9.35553C10.1242 6.34826 11.9156 4.68714 14.6564 4.68714C15.9692 4.68714 17.3424 4.92149 17.3424 4.92149V7.87439H15.8294C14.3388 7.87439 13.8739 8.79933 13.8739 9.74824V11.9991H17.2018L16.6698 15.4676H13.8739V23.8524C19.6103 22.9522 23.9981 17.9882 23.9981 11.9991Z" />
             </svg>
-            Continue with GitHub
+            Continue with FACEBOOK
           </button>
           <button
             type="button"
