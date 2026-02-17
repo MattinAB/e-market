@@ -15,7 +15,7 @@ import { translations } from "@/lib/i18n";
 export default async function NavigationBar() {
   const [user, locale] = await Promise.all([getUserWithRole(), getLocale()]);
   const session = !!user;
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "ADMIN";
   const t = translations[locale].nav;
 
   return (
@@ -47,7 +47,11 @@ export default async function NavigationBar() {
 
         {/* Search */}
         <div className="hidden flex-1 max-w-md lg:flex lg:max-w-sm lg:justify-center">
-          <Suspense fallback={<div className="h-9 w-full rounded-md border bg-muted/50" />}>
+          <Suspense
+            fallback={
+              <div className="h-9 w-full rounded-md border bg-muted/50" />
+            }
+          >
             <SearchBar placeholder={t.search} />
           </Suspense>
         </div>
@@ -64,10 +68,7 @@ export default async function NavigationBar() {
 
           {!session ? (
             <Button asChild>
-              <Link
-                href="/auth"
-                className="inline-flex items-center gap-2"
-              >
+              <Link href="/auth" className="inline-flex items-center gap-2">
                 <User className="size-4" />
                 {t.signIn}
               </Link>
@@ -93,7 +94,11 @@ export default async function NavigationBar() {
 
       {/* Mobile search */}
       <div className="border-t px-4 py-2 lg:hidden">
-        <Suspense fallback={<div className="h-9 w-full rounded-md border bg-muted/50" />}>
+        <Suspense
+          fallback={
+            <div className="h-9 w-full rounded-md border bg-muted/50" />
+          }
+        >
           <SearchBar placeholder={t.search} />
         </Suspense>
       </div>

@@ -13,7 +13,7 @@ export default async function AdminLayout({
     redirect("/auth");
   }
 
-  if (user.role !== "admin") {
+  if (user?.role !== "ADMIN") {
     redirect("/");
   }
 
