@@ -15,7 +15,7 @@ import { CreditCard } from "lucide-react";
 
 export default async function AdminPaymentsPage() {
   const user = await getUserWithRole();
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "ADMIN") {
     redirect("/");
   }
 

@@ -15,7 +15,7 @@ import { Package } from "lucide-react";
 
 export default async function AdminOrdersPage() {
   const user = await getUserWithRole();
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "ADMIN") {
     redirect("/");
   }
 
