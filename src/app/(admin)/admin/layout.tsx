@@ -13,9 +13,15 @@ export default async function AdminLayout({
     redirect("/auth");
   }
 
-  if (user?.role !== "ADMIN") {
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isMerchant = user?.role === "MERCHANT";
+  if (!isAdmin && !isMerchant) {
     redirect("/");
   }
 
-  return <AdminSidebar>{children}</AdminSidebar>;
+  return (
+    <AdminSidebar role={user.role} canCreateProduct={isAdmin}>
+      {children}
+    </AdminSidebar>
+  );
 }

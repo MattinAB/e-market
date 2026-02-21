@@ -2,50 +2,95 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { ShoppingCart, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCart } from "@/lib/cart-context";
 
 type ProductCardProps = {
+  /** When provided, card uses real cart and links to product detail */
+  productId?: string;
+  slug?: string;
   title: string;
   price: number;
   imageUrl: string;
 };
 
-export default function ProductCard({ title, price, imageUrl }: ProductCardProps) {
+function toNum(value: { toNumber?: () => number } | number): number {
+  if (typeof value === "number") return value;
+  return value?.toNumber?.() ?? Number(value);
+}
+
+export default function ProductCard({
+  productId,
+  slug,
+  title,
+  price,
+  imageUrl,
+}: ProductCardProps) {
   const isMobile = useIsMobile();
+  const cart = useCart();
+  const numericPrice = toNum(price);
 
   const handleAddToCart = () => {
-    toast.success(`Added "${title}" to cart`);
+    if (productId != null && slug != null) {
+      cart.addItem({
+        productId,
+        name: title,
+        price: numericPrice,
+        imageUrl: imageUrl || "/placeholder.svg",
+      });
+      toast.success(`Added "${title}" to cart`);
+    } else {
+      toast.info("Product not available for cart.");
+    }
   };
 
   const handleBuyNow = () => {
-    toast.info("Checkout coming soon");
+    if (productId != null && slug != null) {
+      cart.addItem({
+        productId,
+        name: title,
+        price: numericPrice,
+        imageUrl: imageUrl || "/placeholder.svg",
+        quantity: 1,
+      });
+      window.location.href = "/checkout";
+    } else {
+      toast.info("Checkout coming soon");
+    }
   };
+
+  const detailHref = slug ? `/product/${slug}` : "#";
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/20">
-      <div className="relative aspect-square w-full overflow-hidden bg-muted/50">
+      <Link
+        href={detailHref}
+        className="relative aspect-square w-full overflow-hidden bg-muted/50"
+      >
         <Image
-          src={imageUrl}
+          src={imageUrl || "/placeholder.svg"}
           alt={title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 50vw, 25vw"
+          unoptimized={imageUrl?.startsWith("http")}
         />
-      </div>
-
+      </Link>
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <h3 className="line-clamp-2 font-semibold text-foreground">{title}</h3>
+        <Link href={detailHref}>
+          <h3 className="line-clamp-2 font-semibold text-foreground hover:underline">
+            {title}
+          </h3>
+        </Link>
         <p className="text-lg font-bold text-primary">
-          ${price.toFixed(2)}
+          ${numericPrice.toFixed(2)}
         </p>
-
         <div
           className={`mt-auto flex gap-2 ${
-            isMobile
-              ? "flex-col"
-              : "flex-row"
+            isMobile ? "flex-col" : "flex-row"
           }`}
         >
           <Button

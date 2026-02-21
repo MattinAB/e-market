@@ -15,11 +15,29 @@ import { CreditCard } from "lucide-react";
 
 export default async function AdminPaymentsPage() {
   const user = await getUserWithRole();
-  if (!user || user.role !== "ADMIN") {
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isMerchant = user?.role === "MERCHANT";
+  if (!user || (!isAdmin && !isMerchant)) {
     redirect("/");
   }
 
+  let orderIds: string[] | null = null;
+  if (isMerchant && !isAdmin) {
+    const merchantShops = await prisma.shop.findMany({
+      where: { userId: user.id },
+      select: { id: true },
+    });
+    const shopIds = merchantShops.map((s) => s.id);
+    const items = await prisma.orderItem.findMany({
+      where: { product: { shopId: { in: shopIds } } },
+      select: { orderId: true },
+      distinct: ["orderId"],
+    });
+    orderIds = items.map((i) => i.orderId);
+  }
+
   const payments = await prisma.payment.findMany({
+    where: orderIds ? { orderId: { in: orderIds } } : undefined,
     orderBy: { createdAt: "desc" },
     take: 50,
     include: { order: true },

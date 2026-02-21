@@ -5,6 +5,7 @@ import NavigationBar from "./_components/navigation-bar";
 import { Toaster } from "@/components/ui/sonner";
 import AppFooter from "./_components/app-footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CartProvider } from "@/lib/cart-context";
 import { getLocale } from "@/lib/locale-server";
 import { isRTL } from "@/lib/i18n";
 
@@ -49,10 +50,12 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NavigationBar />
-          {children}
-          <Toaster richColors position="top-center" closeButton={true} />
-          <AppFooter />
+          <CartProvider>
+            <NavigationBar />
+            {children}
+            <Toaster richColors position="top-center" closeButton={true} />
+            <AppFooter />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>

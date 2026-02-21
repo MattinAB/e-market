@@ -19,6 +19,7 @@ enum Role {
   USER
   ADMIN
   SUPER_ADMIN
+  MERCHANT
 }
 
 model User {
@@ -32,6 +33,7 @@ model User {
   bannedAt      DateTime?
   bannedReason  String?
   orders        Order[]
+  shops         Shop[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -93,15 +95,18 @@ model Verification {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  items     OrderItem[]
-  status    OrderStatus @default(PENDING)
-  total     Decimal     @db.Decimal(10, 2)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  payments  Payment[]
+  id               String      @id @default(cuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+  status           OrderStatus @default(PENDING)
+  total            Decimal     @db.Decimal(10, 2)
+  shippingName     String?
+  shippingAddress  String?
+  shippingPhone    String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  payments         Payment[]
 
   @@index([userId])
   @@map("order")
@@ -122,6 +127,20 @@ model Payment {
   @@map("payment")
 }
 
+model Shop {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("shop")
+}
+
 model Product {
   id          String      @id @default(cuid())
   name        String
@@ -132,11 +151,15 @@ model Product {
   images      String[]
   sku         String?     @unique
   isActive    Boolean     @default(true)
+  shopId      String
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
   categories  Category[]
   genres      Genre[]
   orderItems  OrderItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([shopId])
 }
 
 model Category {
