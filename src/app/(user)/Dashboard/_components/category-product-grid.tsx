@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/lib/locale-provider";
 import ProductCard from "./product-card";
 
 type ProductFromDb = {
@@ -25,9 +26,17 @@ export function CategoryProductGrid({
   title,
   subtitle,
 }: CategoryProductGridProps) {
+  const t = useTranslations().category;
   const searchParams = useSearchParams();
   const query = searchParams.get("q") ?? "";
-  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const sort = searchParams.get("sort") ?? "";
+  const minPriceParam = searchParams.get("minPrice");
+  const maxPriceParam = searchParams.get("maxPrice");
+  const allLabel = t.all;
+  const [activeCategory, setActiveCategory] = useState<string>(allLabel);
+
+  const toNum = (value: { toNumber?: () => number } | number): number =>
+    typeof value === "number" ? value : value?.toNumber?.() ?? Number(value);
 
   const categoryLabels = useMemo(() => {
     const set = new Set<string>();
@@ -63,8 +72,24 @@ export function CategoryProductGrid({
           ),
       );
     }
-    return list;
-  }, [products, activeCategory, query]);
+    const minP = minPriceParam != null ? parseFloat(minPriceParam) : null;
+    const maxP = maxPriceParam != null ? parseFloat(maxPriceParam) : null;
+    if (minP != null && !isNaN(minP)) {
+      list = list.filter((p) => toNum(p.price) >= minP);
+    }
+    if (maxP != null && !isNaN(maxP)) {
+      list = list.filter((p) => toNum(p.price) <= maxP);
+    }
+    const sorted = [...list];
+    if (sort === "price_asc") {
+      sorted.sort((a, b) => toNum(a.price) - toNum(b.price));
+    } else if (sort === "price_desc") {
+      sorted.sort((a, b) => toNum(b.price) - toNum(a.price));
+    } else if (sort === "newest") {
+      sorted.sort(() => 0);
+    }
+    return sorted;
+  }, [products, activeCategory, query, sort, minPriceParam, maxPriceParam]);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">

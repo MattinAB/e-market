@@ -2,115 +2,86 @@
 
 import Link from "next/link";
 import { Facebook, Twitter } from "lucide-react";
+import { useTranslations } from "@/lib/locale-provider";
 
 export default function AppFooter() {
+  const t = useTranslations().footer;
   return (
     <footer className="mt-auto border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Shop */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Shop
+              {t.shop}
             </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link
-                  href="/Dashboard/mens"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Men
+                <Link href="/Dashboard/mens" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.men}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/Dashboard/womans"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Women
+                <Link href="/Dashboard/womans" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.women}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/Dashboard/kids"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Kids
+                <Link href="/Dashboard/kids" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.kids}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Help */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Help
+              {t.help}
             </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link
-                  href="/cart"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Cart
+                <Link href="/cart" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.cart}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  About Us
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.aboutUs}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Contact
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.contact}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Company */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Company
+              {t.company}
             </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  About Us
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.aboutUs}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Careers
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.careers}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Press
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+                  {t.press}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Social */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Follow us
+              {t.followUs}
             </h3>
             <div className="mt-4 flex gap-3">
               <Link
@@ -133,7 +104,7 @@ export default function AppFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} E‑Market. All rights reserved.
+            © {new Date().getFullYear()} E‑Market. {t.rights}
           </p>
         </div>
       </div>

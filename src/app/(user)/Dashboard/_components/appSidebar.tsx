@@ -17,6 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Shirt, ShoppingBag } from "lucide-react";
+import { SidebarFilters } from "./sidebar-filters";
 
 type AppSidebarProps = {
   children: React.ReactNode;
@@ -59,6 +60,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          <SidebarFilters />
         </SidebarContent>
       </Sidebar>
 
