@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/sonner";
 import AppFooter from "./_components/app-footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CartProvider } from "@/lib/cart-context";
+import { LocaleProvider } from "@/lib/locale-provider";
 import { getLocale } from "@/lib/locale-server";
-import { isRTL } from "@/lib/i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,11 +36,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
-  const dir = isRTL(locale) ? "rtl" : "ltr";
   const lang = locale === "ar" ? "ar" : "en";
 
   return (
-    <html lang={lang} dir={dir} suppressHydrationWarning>
+    <html lang={lang} dir="ltr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${notoSansArabic.variable} antialiased`}
       >
@@ -50,12 +49,14 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CartProvider>
-            <NavigationBar />
-            {children}
-            <Toaster richColors position="top-center" closeButton={true} />
-            <AppFooter />
-          </CartProvider>
+          <LocaleProvider locale={locale}>
+            <CartProvider>
+              <NavigationBar />
+              {children}
+              <Toaster richColors position="top-center" closeButton={true} />
+              <AppFooter />
+            </CartProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

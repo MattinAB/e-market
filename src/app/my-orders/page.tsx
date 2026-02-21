@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getLocale } from "@/lib/locale-server";
+import { translations } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +14,8 @@ export default async function MyOrdersPage() {
   if (!session?.user?.id) {
     redirect("/auth?callbackUrl=/my-orders");
   }
+  const locale = await getLocale();
+  const t = translations[locale].myOrders;
 
   const orders = await prisma.order.findMany({
     where: { userId: session.user.id },
@@ -40,9 +44,9 @@ export default async function MyOrdersPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">My orders</h1>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">{t.myOrders}</h1>
       <p className="mb-6 text-muted-foreground">
-        Track your orders and view details.
+        {t.trackOrders}
       </p>
 
       {orders.length === 0 ? (
@@ -50,13 +54,13 @@ export default async function MyOrdersPage() {
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <Package className="size-12 text-muted-foreground/50" />
             <p className="mt-4 font-medium text-muted-foreground">
-              You have not placed any orders yet.
+              {t.noOrders}
             </p>
             <Link
               href="/Dashboard/mens"
               className="mt-4 font-medium text-primary hover:underline"
             >
-              Browse products
+              {t.browseProducts}
             </Link>
           </CardContent>
         </Card>
@@ -68,12 +72,11 @@ export default async function MyOrdersPage() {
                 <CardContent className="flex flex-row items-center justify-between pt-6">
                   <div>
                     <p className="font-mono font-medium">
-                      Order {order.id.slice(0, 8)}…
+                      {t.order} {order.id.slice(0, 8)}…
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString()} ·{" "}
-                      {order.items.length} item
-                      {order.items.length !== 1 ? "s" : ""} · $
+                      {order.items.length} {t.items} · $
                       {Number(order.total).toFixed(2)}
                     </p>
                   </div>
@@ -85,7 +88,7 @@ export default async function MyOrdersPage() {
                       href={`/my-orders/${order.id}`}
                       className="text-sm font-medium text-primary hover:underline"
                     >
-                      View
+                      {t.view}
                     </Link>
                   </div>
                 </CardContent>

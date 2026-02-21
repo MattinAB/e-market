@@ -2,6 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getLocale } from "@/lib/locale-server";
+import { translations } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,23 +42,26 @@ export default async function MyOrderDetailPage({
 
   if (!order) notFound();
 
+  const locale = await getLocale();
+  const t = translations[locale].myOrders;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <Link href="/my-orders" className="text-sm text-muted-foreground hover:underline">
-        ← Back to my orders
+        ← {t.back}
       </Link>
-      <h1 className="mt-4 text-2xl font-bold">Order {order.id.slice(0, 8)}…</h1>
+      <h1 className="mt-4 text-2xl font-bold">{t.order} {order.id.slice(0, 8)}…</h1>
 
       <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base">Status</CardTitle>
+          <CardTitle className="text-base">{t.status}</CardTitle>
           <Badge variant={order.status === "CANCELLED" ? "destructive" : "secondary"}>
             {order.status}
           </Badge>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Placed on{" "}
+            {t.placedOn}{" "}
             {new Date(order.createdAt).toLocaleString(undefined, {
               dateStyle: "medium",
               timeStyle: "short",
@@ -65,7 +70,7 @@ export default async function MyOrderDetailPage({
 
           {(order.shippingName ?? order.shippingAddress ?? order.shippingPhone) && (
             <div>
-              <h3 className="font-medium">Shipping</h3>
+              <h3 className="font-medium">{t.shipping}</h3>
               <p className="text-sm">{order.shippingName ?? "—"}</p>
               <p className="text-sm text-muted-foreground">{order.shippingAddress ?? "—"}</p>
               <p className="text-sm text-muted-foreground">{order.shippingPhone ?? "—"}</p>
@@ -73,7 +78,7 @@ export default async function MyOrderDetailPage({
           )}
 
           <div>
-            <h3 className="font-medium">Items</h3>
+            <h3 className="font-medium">{t.itemsList}</h3>
             <ul className="mt-2 space-y-1 text-sm">
               {order.items.map((item) => (
                 <li key={item.id}>
@@ -89,12 +94,12 @@ export default async function MyOrderDetailPage({
           </div>
 
           <p className="text-lg font-semibold">
-            Total: ${toNum(order.total).toFixed(2)}
+            {t.total}: ${toNum(order.total).toFixed(2)}
           </p>
 
           {order.payments.length > 0 && (
             <div>
-              <h3 className="font-medium">Payment</h3>
+              <h3 className="font-medium">{t.payment}</h3>
               <p className="text-sm text-muted-foreground">
                 {order.payments[0].method} · {order.payments[0].status}
               </p>

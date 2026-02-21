@@ -7,6 +7,7 @@ import { ShoppingCart, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCart } from "@/lib/cart-context";
+import { useTranslations } from "@/lib/locale-provider";
 
 type ProductCardProps = {
   /** When provided, card uses real cart and links to product detail */

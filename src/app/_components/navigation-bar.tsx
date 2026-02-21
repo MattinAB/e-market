@@ -16,7 +16,7 @@ export default async function NavigationBar() {
   const [user, locale] = await Promise.all([getUserWithRole(), getLocale()]);
   const session = !!user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const t = translations[locale].nav;
+  const t = translations[locale];
 
   return (
     <header
@@ -35,13 +35,13 @@ export default async function NavigationBar() {
         {/* Nav links */}
         <nav className="flex items-center gap-1 sm:gap-2">
           <Button asChild variant="ghost" size="sm" className="font-medium">
-            <Link href="/Dashboard/mens">{t.men}</Link>
+            <Link href="/Dashboard/mens">{t.nav.men}</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="font-medium">
-            <Link href="/Dashboard/womans">{t.women}</Link>
+            <Link href="/Dashboard/womans">{t.nav.women}</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="font-medium">
-            <Link href="/Dashboard/kids">{t.kids}</Link>
+            <Link href="/Dashboard/kids">{t.nav.kids}</Link>
           </Button>
         </nav>
 
@@ -52,7 +52,7 @@ export default async function NavigationBar() {
               <div className="h-9 w-full rounded-md border bg-muted/50" />
             }
           >
-            <SearchBar placeholder={t.search} />
+            <SearchBar placeholder={t.nav.search} />
           </Suspense>
         </div>
 
@@ -61,7 +61,7 @@ export default async function NavigationBar() {
           <LanguageSwitcher />
           <ThemeSwitcher />
           <Button asChild variant="ghost" size="icon" className="relative">
-            <Link href="/cart" title="View cart">
+            <Link href="/cart" title={t.nav.viewCart}>
               <CiShoppingCart className="size-5" />
             </Link>
           </Button>
@@ -70,16 +70,16 @@ export default async function NavigationBar() {
             <Button asChild>
               <Link href="/auth" className="inline-flex items-center gap-2">
                 <User className="size-4" />
-                {t.signIn}
+                {t.nav.signIn}
               </Link>
             </Button>
           ) : (
             <div className="flex items-center gap-1">
               <Button asChild variant="ghost" size="sm">
-                <Link href="/my-orders">My orders</Link>
+                <Link href="/my-orders">{t.nav.myOrders}</Link>
               </Button>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/profile">Profile</Link>
+                <Link href="/profile">{t.nav.profile}</Link>
               </Button>
               {isAdmin && (
                 <Button asChild variant="outline" size="sm">
@@ -88,11 +88,11 @@ export default async function NavigationBar() {
                     className="inline-flex items-center gap-2"
                   >
                     <LayoutDashboard className="size-4" />
-                    {t.admin}
+                    {t.nav.admin}
                   </Link>
                 </Button>
               )}
-              <SignoutButton label={t.signOut} />
+              <SignoutButton label={t.nav.signOut} />
             </div>
           )}
         </div>
@@ -105,7 +105,7 @@ export default async function NavigationBar() {
             <div className="h-9 w-full rounded-md border bg-muted/50" />
           }
         >
-          <SearchBar placeholder={t.search} />
+          <SearchBar placeholder={t.nav.search} />
         </Suspense>
       </div>
 
