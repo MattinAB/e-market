@@ -4,269 +4,327 @@ import { useRef, useState } from "react";
 import SuccessAlert from "./successAlert";
 import { productCreateInputSchema } from "@/lib/validations/product";
 import { createProduct } from "../_actions/product-api";
+import * as z from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
-export default function CreateForm() {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [formErrors, setFormErrors] = useState<string[] | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+const formSchema = z.object({
+  shopId: z.string().min(1, "Shop is required"),
+  name: z.string().min(1, "Product name is required"),
+  description: z.string().min(1, "Description is required"),
+  price: z.string().refine((val) => !isNaN(parseFloat(val)), {
+    message: "Price must be a valid number",
+  }),
+  stock: z.string().refine((val) => !isNaN(parseInt(val)), {
+    message: "Stock must be a valid integer",
+  }),
+  sku: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || (val.length >= 3 && val.length <= 20 && /^[A-Z0-9-]+$/.test(val) && val.includes("-")),
+      "SKU must be 3–20 chars, uppercase/dash (e.g. TYPE-COLOR-SIZE)",
+    ),
+  image: z.string().min(1, "Image URLs are required"),
+  categorie: z.string().min(1, "Categories are required"),
+  genre: z.string().min(1, "Genres are required"),
+});
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setFormErrors(null);
-    setIsSubmitting(true);
+type FormValues = z.infer<typeof formSchema>;
+
+type CreateFormProps = {
+  shops: { id: string; name: string; slug: string }[];
+};
+
+export default function CreateForm({ shops }: CreateFormProps) {
+  const form = useForm<FormValues>({
+    defaultValues: {
+      shopId: shops[0]?.id ?? "",
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      sku: "",
+      image: "",
+      categorie: "",
+      genre: "",
+    },
+  });
+
+  async function handleSubmit(data: FormValues) {
+    const urls = data.image.split(",").map((url) => url.trim()).filter(Boolean);
+    if (urls.length === 0) {
+      toast.error("At least one image URL is required.");
+      return;
+    }
+    const input = {
+      shopId: data.shopId,
+      name: data.name,
+      description: data.description,
+      price: parseFloat(data.price),
+      stock: parseInt(data.stock, 10),
+      images: urls,
+      ...(data.sku?.trim() && { sku: data.sku.trim() }),
+      categories: data.categorie
+        .split(",")
+        .map((c) => ({ name: c.trim() }))
+        .filter((c) => c.name),
+      genres: data.genre
+        .split(",")
+        .map((g) => ({ name: g.trim() }))
+        .filter((g) => g.name),
+    };
 
     try {
-      const formData = new FormData(e.currentTarget);
-
-      // Parse comma-separated category names and slugs
-      const categoryNames = String(formData.get("categoryName") ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const categorySlugs = String(formData.get("categorySlug") ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      // Parse comma-separated genre names and slugs
-      const genreNames = String(formData.get("genresName") ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const genreSlugs = String(formData.get("genreSlug") ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      // Combine names and slugs into objects
-      const categories = categoryNames.map((name, index) => ({
-        name,
-        slug: categorySlugs[index] || name.toLowerCase().replace(/\s+/g, "-"),
-      }));
-      const genres = genreNames.map((name, index) => ({
-        name,
-        slug: genreSlugs[index] || name.toLowerCase().replace(/\s+/g, "-"),
-      }));
-
-      const productData = {
-        name: String(formData.get("name") ?? ""),
-        slug: String(formData.get("slug") ?? ""),
-        description: String(formData.get("description") ?? ""),
-        price: String(formData.get("price") ?? "0"),
-        stock: String(formData.get("stock") ?? "0"),
-        sku: String(formData.get("sku") ?? ""),
-        images: String(formData.get("images") ?? ""),
-        categories,
-        genres,
-        isActive: formData.get("isActive") === "on",
-      };
-
-      // Validate with Zod on client side first
-      const validationResult = productCreateInputSchema.safeParse(productData);
-      if (!validationResult.success) {
-        setFormErrors(
-          validationResult.error.issues.map(
-            (issue) => `${issue.path.join(".")}: ${issue.message}`,
-          ),
-        );
-        return;
+      const result = await createProduct(input);
+      if (result) {
+        toast.success("Product created successfully!");
+        form.reset();
       }
-
-      const res = await createProduct(validationResult.data);
-      if (res.id) {
-        setTimeout(() => {
-          setIsSuccess(false);
-        }, 5000);
-        formRef.current?.reset();
-        setIsSuccess(true);
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to create product";
-      setFormErrors([errorMessage]);
-      alert(`Error: ${errorMessage}`);
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      toast.error(
+        "Failed to create product. Please check your input and try again.",
+      );
+      return;
     }
   }
+
   return (
     <div className="flex flex-col items-center min-h-screen pt-[10vh]">
-      {isSuccess && <SuccessAlert title="Product created successfully." />}
       <h1 className="font-sans font-bold text-2xl text-gray-800">
         Create Product
       </h1>
       <div className="flex  m-2 min-w-3xl justify-center shadow-2xl py-2.5">
         <form
-          ref={formRef}
           className="flex flex-col gap-4 w-full max-w-md px-4"
-          onSubmit={handleSubmit}
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
-          {formErrors && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded">
-              <strong className="block font-medium">Validation errors:</strong>
-              <ul className="list-disc pl-5">
-                {formErrors.map((m, i) => (
-                  <li key={i}>{m}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="name">
-              Product Name
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="name"
-              name="name"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="slug">
-              Slug
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="slug"
-              name="slug"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="description">
-              Description
-            </label>
-            <textarea
-              className="border-black border-2 p-1"
-              id="description"
-              name="description"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="price">
-              Price
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="price"
-              name="price"
-              type="number"
-              step="0.01"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="stock">
-              Stock
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="stock"
-              name="stock"
-              type="number"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="sku">
-              SKU
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="sku"
-              name="sku"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="images">
-              Image URLs (comma separated)
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="images"
-              name="images"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label
-              className="mr-2 font-mono font-medium"
-              htmlFor="categoryName"
-            >
-              Categories-name (comma separated)
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="categoryName"
-              name="categoryName"
-              type="text"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label
-              className="mr-2 font-mono font-medium"
-              htmlFor="categorySlug"
-            >
-              Categories-Slug (comma separated)
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="categorySlug"
-              name="categorySlug"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="genresName">
-              Genres-name (comma separated)
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="genresName"
-              name="genresName"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mr-2 font-mono font-medium" htmlFor="genreSlug">
-              Genres-slug (comma separated)
-            </label>
-            <input
-              className="border-black border-2 p-1"
-              id="genreSlug"
-              name="genreSlug"
-              type="text"
-            />
-          </div>
-
-          <div className="flex flex-row items-center gap-2">
-            <input
-              className="border-black border-2 p-1"
-              id="isActive"
-              name="isActive"
-              type="checkbox"
-            />
-            <label className="font-mono font-medium" htmlFor="isActive">
-              Is Active
-            </label>
-          </div>
-
+          <Controller
+            name="shopId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Shop
+                </FieldLabel>
+                <select
+                  {...field}
+                  id={field.name}
+                  className="border-black border-2 p-1 w-full rounded"
+                  aria-invalid={fieldState.invalid}
+                >
+                  <option value="">Select shop</option>
+                  {shops.map((shop) => (
+                    <option key={shop.id} value={shop.id}>
+                      {shop.name}
+                    </option>
+                  ))}
+                </select>
+                {fieldState.error && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Product Name
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                  type="text"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Description
+                </FieldLabel>
+                <textarea
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="price"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Price
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1 max-w-1/4"
+                  id={field.name}
+                  name={field.name}
+                  type="text"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="stock"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Stock
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1 max-w-1/4"
+                  id={field.name}
+                  name={field.name}
+                  type="text"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="sku"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Sku
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                  placeholder="TYPE-COLOR-SIZE"
+                  aria-invalid={fieldState.invalid}
+                  onChange={(e) => {
+                    const cleaned = e.target.value
+                      .toUpperCase()
+                      .replace(/\s+/g, "-") // Turn spaces into dashes
+                      .replace(/[^A-Z0-9-]/g, ""); // Remove any special characters except dashes
+                    field.onChange(cleaned);
+                  }}
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="image"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  ImageUrl
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="http://"
+                  type="url"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="categorie"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Category
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Mens, Womens, Accessories, etc."
+                  type="text"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="genre"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  className="mr-2 font-mono font-medium"
+                  htmlFor={field.name}
+                >
+                  Genre
+                </FieldLabel>
+                <Input
+                  {...field}
+                  className="border-black border-2 p-1"
+                  id={field.name}
+                  name={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Streetwear, Formal, Casual, etc."
+                  type="text"
+                />
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
           <button
             className="bg-black text-white p-2 font-bold mt-2 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
-            disabled={isSubmitting}
           >
-            {isSubmitting ? "Creating..." : "Create"}
+            Create Product
           </button>
         </form>
       </div>

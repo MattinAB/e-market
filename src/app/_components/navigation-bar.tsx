@@ -15,7 +15,7 @@ import { translations } from "@/lib/i18n";
 export default async function NavigationBar() {
   const [user, locale] = await Promise.all([getUserWithRole(), getLocale()]);
   const session = !!user;
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const t = translations[locale].nav;
 
   return (
@@ -75,6 +75,12 @@ export default async function NavigationBar() {
             </Button>
           ) : (
             <div className="flex items-center gap-1">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/my-orders">My orders</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/profile">Profile</Link>
+              </Button>
               {isAdmin && (
                 <Button asChild variant="outline" size="sm">
                   <Link

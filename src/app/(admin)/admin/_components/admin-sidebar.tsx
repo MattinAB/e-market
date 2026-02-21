@@ -15,13 +15,19 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Package, CreditCard, ArrowLeft } from "lucide-react";
+import { Package, CreditCard, ArrowLeft, PlusCircle, Store } from "lucide-react";
 
 type AdminSidebarProps = {
   children: React.ReactNode;
+  role?: string;
+  canCreateProduct?: boolean;
 };
 
-export function AdminSidebar({ children }: AdminSidebarProps) {
+export function AdminSidebar({
+  children,
+  role,
+  canCreateProduct = true,
+}: AdminSidebarProps) {
   return (
     <SidebarProvider>
       <Sidebar className="border-r border-border/50 bg-sidebar/80 backdrop-blur-sm">
@@ -41,6 +47,26 @@ export function AdminSidebar({ children }: AdminSidebarProps) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {canCreateProduct && (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild className="gap-2">
+                        <Link href="/admin/create-product">
+                          <PlusCircle className="size-4" />
+                          Create Product
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild className="gap-2">
+                        <Link href="/admin/shops">
+                          <Store className="size-4" />
+                          Shops
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild className="gap-2">
                     <Link href="/admin/payments">
